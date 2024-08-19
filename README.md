@@ -69,9 +69,6 @@ get products/_doc/25?_source_includes=name,phonePrice
 
 ## Index Management
 ### Define Index with Mappings
-
-## Index Management
-### Define Index with Mappings
 PUT products
 {
   "mappings": {
