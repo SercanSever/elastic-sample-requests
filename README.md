@@ -2,8 +2,9 @@
 
 ## Basic CRUD Operations
 ### Get a Document by ID
+```
 get products/_doc/1
-
+```
 ### Get the Source of a Document
 get products/_source/1
 
