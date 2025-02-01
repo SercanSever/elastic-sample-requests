@@ -1,360 +1,303 @@
-# Elasticsearch Query Collection
+**Elasticsearch Query Collection**
+----------------------------------
 
-## Basic CRUD Operations
-### Get a Document by ID
-```
-get products/_doc/1
-```
-### Get the Source of a Document
-```
-get products/_source/1
-```
-### Get Shards Information for an Index
-```
-get _cat/shards/products
-```
-### Create or Update a Document (Without Refresh)
-```
-put products/_doc/20?refresh=false
-{
-  "name":"Iphone 11"
-}
-```
+Bu doküman, Elasticsearch ile temel CRUD işlemleri, indeks yönetimi ve sorgu teknikleri hakkında kapsamlı bir referans sunmaktadır.
 
-### Create a New Document (Auto-generated ID)
-```
-post products/_doc
-{
-  "name":"Iphone 11"
-}
-```
-### Update a Document by ID
-```
-put products/_doc/25
-{
-  "name":"Iphone 11",
-  "phonePrice": "15000"
-}
-```
-### Update Index Settings
-```
-put products/_settings
-{
-  "index":{"refresh_interval":"5s"}
-}
-```
-### Partially Update a Document
-```
-post products/_update/20
-{
-  "doc":{
-    "name":"iphone 12"
-  }
-}
-```
+**1\. Temel CRUD İşlemleri**
 
-### Delete a Document by ID
+**1.1 Belirli Bir Dokümanı Kimlik (ID) ile Getirme**
+
+Aşağıdaki sorgu, belirtilen products indeksindeki 1 kimliğine sahip dokümanı getirir.
 ```
-delete products/_doc/25
+GET products/\_doc/1
 ```
-### Check if a Document Exists
+**1.2 Bir Dokümanın Sadece İçeriğini Getirme**
+
+Bu sorgu, belirtilen dokümanın sadece içeriğini döndürür, metaveri içermez.
 ```
-head products/_doc/25
+GET products/\_source/1
 ```
-## Search Queries
-### Match All Documents
+**1.3 Belirli Bir İndeksin Shard Bilgilerini Getirme**
+
+Bu sorgu, belirtilen indeksin shard (bölüm) yapılandırmasını görüntüler.
 ```
-get products/_search
+GET \_cat/shards/products
+```
+**1.4 Doküman Oluşturma veya Güncelleme (Refresh Kapatılmış)**
+
+Eğer 20 ID'li bir doküman yoksa, oluşturur; varsa günceller.
+```
+PUT products/\_doc/20?refresh=false
+
 {
-  "query":{"match_all":{}}
+
+"name": "Iphone 11"
+
 }
 ```
+**1.5 Yeni Bir Doküman Oluşturma (Otomatik ID ile)**
 
-### Multi-Get Documents by IDs
+Bu sorgu, rastgele bir kimlik (ID) atayarak yeni bir doküman ekler.
 ```
-get products/_mget
+POST products/\_doc
+
 {
-  "ids":[20,"8dkqKJEBwI2OvwcgXNv7"]
+
+"name": "Iphone 11"
+
 }
 ```
+**1.6 Belirli ID'ye Sahip Dokümanı Güncelleme**
 
-### Get the Source of a Document by ID
+Var olan dokümanı, belirtilen ID ile günceller.
 ```
-get products/_source/20
+PUT products/\_doc/25
+
+{
+
+"name": "Iphone 11",
+
+"phonePrice": "15000"
+
+}
 ```
-### Get Specific Fields from a Document
+**1.7 İndeks Ayarlarını Güncelleme**
+
+İndeksin refresh\_interval ayarını değiştirerek, belirli bir zaman aralığında otomatik güncellenmesini sağlar.
 ```
-get products/_doc/25?_source_includes=name,phonePrice
+PUT products/\_settings
+
+{
+
+"index": {"refresh\_interval": "5s"}
+
+}
 ```
-## Index Management
-### Define Index with Mappings
+**1.8 Dokümanı Kısmi Olarak Güncelleme**
+
+Bu sorgu, sadece belirtilen alanları günceller, mevcut diğer alanlara dokunmaz.
+```
+POST products/\_update/20
+
+{
+
+"doc": {
+
+"name": "iphone 12"
+
+}
+
+}
+```
+**1.9 Dokümanı ID ile Silme**
+
+Belirtilen ID'ye sahip dokümanı siler.
+```
+DELETE products/\_doc/25
+```
+**1.10 Belirtilen Dokümanın Var Olup Olmadığını Kontrol Etme**
+
+Bu sorgu, 25 ID'li dokümanın var olup olmadığını kontrol eder.
+```
+HEAD products/\_doc/25
+```
+2\. Arama (Search) Sorguları
+----------------------------
+
+**2.1 Tüm Dokümanları Getirme**
+
+Elasticsearch'teki tüm dokümanları döndürür.
+```
+GET products/\_search
+
+{
+
+"query": {"match\_all": {}}
+
+}
+```
+**2.2 Birden Fazla Dokümanı ID ile Getirme**
+
+Bu sorgu, belirtilen ID değerlerine sahip dokümanları getirir.
+```
+GET products/\_mget
+
+{
+
+"ids": \[20, "8dkqKJEBwI2OvwcgXNv7"\]
+
+}
+```
+**2.3 Doküman İçeriğini ID ile Getirme**
+
+Bu sorgu, belirtilen dokümanın sadece içeriğini getirir.
+```
+GET products/\_source/20
+```
+**2.4 Belirli Alanları Getirme**
+
+Sadece belirtilen alanları (name ve phonePrice) döndürür.
+```
+GET products/\_doc/25?\_source\_includes=name,phonePrice
+```
+3\. İndeks Yönetimi
+-------------------
+
+**3.1 Yeni Bir İndeks Tanımlama ve Mapping Belirleme**
+
+Bu sorgu, products indeksini oluşturur ve alan yapılandırmasını tanımlar.
 ```
 PUT products
-{
-  "mappings": {
-    "properties": {
-      "name": {
-        "type": "text"
-      },
-      "price": {
-        "type": "long"
-      },
-      "stock_no": {
-        "type": "keyword"
-      },
-      "warehouse": {
-        "properties": {
-          "germany": {
-            "type": "integer"
-          },
-          "turkey": {
-            "type": "integer"
-          }
-        }
-      }
-    }
-  }
-}
-```
-### Update Index Mappings to Add a New Field
-```
-PUT products/_mapping
-{
-  "properties":{
-    "color":{
-      "type":"keyword"
-    }
-  }
-}
-```
 
-### Update Field Mappings to Add Multi-Field
-```
-PUT products/_mapping
 {
-  "properties":{
-    "name":{
-    "type":"text",
-    "fields":{
-      "keyword":{
-        "type":"keyword"
-      }
-    }
-  }
-  }
-}
-```
-### Get Index Mappings
-```
-get products/_mapping
-```
-### Create a Document with Nested Fields
-```
-put product/_doc/1
-{
-  "name":"kalem 1",
-  "price":33,
-  "stock_no":3223,
-  "warehouse":{
-    "germany":123,
-    "turkey":123
-  }
-}
-```
-## Search Queries with Filters
 
-### Search for a Specific Term
-```
-get product/_search
-{
-  "query":{
-    "term": {
-      "name": {
-        "value": "kalem 1"
-      }
-    }
-  }
-}
-```
-### Search for a Term in a Specific Field
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "query":{
-    "term": {
-      "customer_first_name.keyword": {
-        "value": "sonya",
-        "case_insensitive":true
-      }
-    }
-  }
-}
-```
-### Search by Multiple Terms
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "query":{
-    "terms": {
-      "customer_first_name.keyword": ["Sonya","Yasmine"]
-    }
-  }
-}
-```
-### Search by Document IDs
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "query":{
-    "ids": {
-      "values": ["xtnzJ5EBwI2Ovwcgl8mb","3dnzJ5EBwI2Ovwcgl8mb"]
-    }
-  }
-}
-```
-### Prefix Query
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "query":{
-    "prefix": {
-      "customer_first_name.keyword": {
-        "value": "Edd"
-      }
-    }
-  }
-}
-```
-### Range Query
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "query":{
-    "range": {
-      "taxful_total_price": {
-        "gte": 10,
-        "lte": 20
-      }
-    }
-  }
-}
-```
-### Wildcard Query
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "query":{
-    "wildcard": {
-      "customer_full_name.keyword": {
-        "value": "* Perkins"
-      }
-    }
-    }
-}
-```
-### Fuzzy Query
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "query":{
-    "fuzzy": {
-      "customer_first_name.keyword": {
-        "value": "ssdie",
-        "fuzziness": 2
-      }
-    }
-  }
-}
-```
-### Fuzzy Query with Pagination
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "from":0,
-  "size":3,
-  "query":{
-    "fuzzy": {
-      "customer_first_name.keyword": {
-        "value": "ssdie",
-        "fuzziness": 2
-      }
-    }
-  }
-}
-```
-### Select Specific Fields and Fuzzy Query
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "_source":{
-    "includes":["category","currency","customer_first_name"]
-  },
-  "query":{
-    "fuzzy": {
-      "customer_first_name.keyword": {
-        "value": "ssdie",
-        "fuzziness": 2
-      }
-    }
-  }
-}
-```
-### Select Specific Fields, Fuzzy Query, and Sort
-```
-get kibana_sample_data_ecommerce/_search
-{
-  "_source":{
-    "includes":["category","taxless_total_price","customer_first_name"]
-  },
-  "query":{
-    "fuzzy": {
-      "customer_first_name.keyword": {
-        "value": "ssdie",
-        "fuzziness": 2
-      }
-    }
-  },
-  "sort":{
-    "taxless_total_price":{
-      "order":"desc"
-    }
-  }
-}
-```
-### Match Query for Specific Category
-```
-post kibana_sample_data_ecommerce/_search
-{
-  "query":{
-    "match": {
-      "category": "Men's"
-    }
-  }
-}
-```
-### Match Query with OR Operator
-```
-post kibana_sample_data_ecommerce/_search
-{
-  "query":{
-    "match": {
-      "customer_full_name": {
-        "query":"test goodwin",
-        "operator":"or"
-      }
-    }
-  }
-}
-```
+"mappings": {
 
+"properties": {
 
+"name": {"type": "text"},
 
+"price": {"type": "long"},
 
+"stock\_no": {"type": "keyword"},
 
+"warehouse": {
 
+"properties": {
 
+"germany": {"type": "integer"},
 
+"turkey": {"type": "integer"}
 
+}
 
+}
 
+}
 
+}
+
+}
+```
+**3.2 Yeni Bir Alan Ekleyerek Mapping Güncelleme**
+
+Var olan bir indekse yeni bir alan (color) ekler.
+```
+PUT products/\_mapping
+
+{
+
+"properties": {
+
+"color": {"type": "keyword"}
+
+}
+
+}
+```
+**3.3 Var Olan Bir Alanı Multi-Field Yapısıyla Güncelleme**
+
+Bir alanın hem text hem de keyword türlerinde kullanılmasını sağlar.
+```
+PUT products/\_mapping
+
+{
+
+"properties": {
+
+"name": {
+
+"type": "text",
+
+"fields": {
+
+"keyword": {"type": "keyword"}
+
+}
+
+}
+
+}
+
+}
+```
+**3.4 Bir İndeksin Mapping Bilgilerini Getirme**
+
+Bu sorgu, products indeksinin mevcut mapping yapılandırmasını getirir.
+```
+GET products/\_mapping
+```
+4\. Gelişmiş Arama Sorguları
+----------------------------
+
+**4.1 Belirli Bir Değer ile Arama (Term Query)**
+
+Belirtilen name alanında tam eşleşme araması yapar.
+```
+GET product/\_search
+
+{
+
+"query": {
+
+"term": {
+
+"name": {"value": "kalem 1"}
+
+}
+
+}
+
+}
+```
+**4.2 Wildcard (Joker Karakter) Kullanarak Arama**
+
+Belirtilen kelimenin sonuna "\*" koyarak arama yapar.
+```
+GET kibana\_sample\_data\_ecommerce/\_search
+
+{
+
+"query": {
+
+"wildcard": {
+
+"customer\_full\_name.keyword": {
+
+"value": "\* Perkins"
+
+}
+
+}
+
+}
+
+}
+```
+**4.3 Fuzzy (Yaklaşık) Eşleşme Araması**
+
+Benzer kelimeleri bulmak için belirli bir hata toleransı (fuzziness) ile arama yapar.
+```
+GET kibana\_sample\_data\_ecommerce/\_search
+
+{
+
+"query": {
+
+"fuzzy": {
+
+"customer\_first\_name.keyword": {
+
+"value": "ssdie",
+
+"fuzziness": 2
+
+}
+
+}
+
+}
+
+}
+```
+Bu dokümanda Elasticsearch ile temel CRUD işlemleri, indeks yönetimi ve arama sorguları detaylandırılmıştır. Bu sorgular, Elasticsearch veritabanınızda etkin bir şekilde veri yönetimi yapmanızı sağlar.
